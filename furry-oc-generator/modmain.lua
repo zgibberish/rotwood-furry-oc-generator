@@ -5,10 +5,7 @@ local CharacterScreen = require ("screens.character.characterscreen")
 local Widget = require "widgets.widget"
 local ScrollPanel = require "widgets.scrollpanel"
 local TextButton = require "widgets.textbutton"
-local Screen = require "widgets.screen"
-local templates = require "widgets.ftf.templates"
 local fmodtable = require "defs.sound.fmodtable"
-local easing = require "util.easing"
 local UpvalueHacker = require("tools.upvaluehacker")
 
 local CHARACTER_SPECIES = GLOBAL.CHARACTER_SPECIES
