@@ -264,6 +264,6 @@ AddClassPostConstruct("screens.character.characterscreen", function(self)
         end
         GLOBAL.TheSaveSystem:SaveCharacterForPlayerID(self.owner.Network:GetPlayerID())
 
-        self.owner:PushEvent("charactercreator_load") -- to refresh speceis emotes
+        self.owner:PushEvent("charactercreator_load") -- to refresh species emotes
     end
 end)
