@@ -7,9 +7,27 @@ local ScrollPanel = require "widgets.scrollpanel"
 local TextButton = require "widgets.textbutton"
 local fmodtable = require "defs.sound.fmodtable"
 local UpvalueHacker = require("tools.upvaluehacker")
+local easing = require "util.easing"
+
+local Updater = GLOBAL.Updater
 
 local CHARACTER_SPECIES = GLOBAL.CHARACTER_SPECIES
 local REMOVE_TAIL_BUTTON_TEXT = "<p img='images/icons_emotes1/emote_mammimal_howl.tex' color=0 scale=2.5>\n\nREMOVE\nTAIL"
+
+-- update these whenever the species list is changed
+local SPECIES_OVERRIDE_BUTTON_TEXT = {
+    [1] = "<p img='images/ui_ftf_dialog/convo_close.tex' color=0 scale=2.5>\n\nSPECIES\nOVERRIDE",
+    [2] = "<p img='images/icons_emotes1/emote_mammimal_howl.tex' color=0 scale=2.5>\n\nSPECIES\nOVERRIDE",
+    [3] = "<p img='images/icons_emotes1/emote_amphibee_bubble_kiss.tex' color=0 scale=2.5>\n\nSPECIES\nOVERRIDE",
+    [4] = "<p img='images/icons_emotes1/emote_pump.tex' color=0 scale=2.5>\n\nSPECIES\nOVERRIDE",
+}
+local SPECEIS_OVERRIDE_BUTTON_SELECTED = 1
+local SPECIES_OVERRIDE_SELECTED_TO_SPECIES = {
+    [1] = nil,
+    [2] = "canine",
+    [3] = "mer",
+    [4] = "ogre",
+}
 
 -- alow all locked parts, but this makes a dummy head part selectable
 function UnlockTracker:IsCosmeticUnlocked(id, _)
@@ -114,6 +132,8 @@ UpvalueHacker.SetUpvalue(CharacterScreen.GenerateColorList, {}, "COLOR_EXCEPTION
 
 -- modifications to the character customizer screen
 AddClassPostConstruct("screens.character.characterscreen", function(self)
+    SPECEIS_OVERRIDE_BUTTON_SELECTED = 1
+
     self.colorlist_cols = 22
 	self.colors_scroll = self.customize_character_contents:AddChild(ScrollPanel())
 		:SetScale(1)
@@ -135,13 +155,39 @@ AddClassPostConstruct("screens.character.characterscreen", function(self)
 		:Offset(-self.panel_w/2 + 260, -self.panel_h/2 + 180 + 220)
 		:SetOnClickFn(function() self:OnRemoveTailClicked() end)
 		:SetMultColorAlpha(1)
-		:SetShown(true)
+		:SetShown(false)
 		:SetControlUpSound(fmodtable.Event.ui_revert_undo)
     function self:OnRemoveTailClicked()
         self.puppet.components.charactercreator:SetBodyPart("OTHER", nil)
         self.owner.components.charactercreator:SetBodyPart("OTHER", nil)
         self:ApplyChanges()
         self:CheckForChanges()
+    end
+
+    self.species_override_button = self.panel_root:AddChild(TextButton())
+        :SetName("Remove tail button")
+        :SetTextSize(self.label_font_size)
+        :OverrideLineHeight(self.label_font_size * 0.8)
+        :SetText(SPECIES_OVERRIDE_BUTTON_TEXT[SPECEIS_OVERRIDE_BUTTON_SELECTED])
+        :SetTextColour(GLOBAL.UICOLORS.BACKGROUND_DARK)
+        :SetTextFocusColour(GLOBAL.UICOLORS.FOCUS_DARK)
+        :SetTextDisabledColour(GLOBAL.UICOLORS.LIGHT_TEXT_DARK)
+        :LayoutBounds("center", "center", self.panel_bg)
+        :Offset(-self.panel_w/2 + 260, -self.panel_h/2 + 180 + 220*2)
+        :SetOnClickFn(function() self:OnSpeciesOverrideClicked() end)
+        :SetMultColorAlpha(0.4)
+        :SetShown(false)
+    function self:OnSpeciesOverrideClicked()
+        -- cycles SPECEIS_OVERRIDE_BUTTON_SELECTED from 1 to #SPECIES_OVERRIDE_BUTTON_TEXT
+        SPECEIS_OVERRIDE_BUTTON_SELECTED = SPECEIS_OVERRIDE_BUTTON_SELECTED + 1
+        if SPECEIS_OVERRIDE_BUTTON_SELECTED > #SPECIES_OVERRIDE_BUTTON_TEXT then
+            SPECEIS_OVERRIDE_BUTTON_SELECTED = 1
+        end
+
+        self.species_override_button
+            :SetText(SPECIES_OVERRIDE_BUTTON_TEXT[SPECEIS_OVERRIDE_BUTTON_SELECTED])
+        self.species_override_button
+            :SetMultColorAlpha(SPECEIS_OVERRIDE_BUTTON_SELECTED == 1 and 0.4 or 1)
     end
 
     local original_GenerateBodyPartList = self.GenerateBodyPartList
@@ -176,5 +222,48 @@ AddClassPostConstruct("screens.character.characterscreen", function(self)
     local original_ElementTooltipFn = self.ElementTooltipFn
     function self:ElementTooltipFn(debug_mode, def, is_head, is_locked, is_purchasable, ...)
         return original_ElementTooltipFn(self, debug_mode, def, is_head, false, false, ...)
+    end
+
+    -- animate the remove tail and species override buttons in like the other buttons
+    local original__AnimateIn = self._AnimateIn
+    function self:_AnimateIn()
+        original__AnimateIn(self)
+        self.panel_root:RunUpdater(Updater.Parallel{
+            Updater.Series{
+                Updater.Wait(0.3),
+                Updater.Parallel{
+                    Updater.Ease(function(v) self.remove_tail_button:SetMultColorAlpha(v) end, 0, 1, 0.6, easing.outQuad),
+                    Updater.Ease(function(v) self.species_override_button:SetMultColorAlpha(v) end, 0, SPECEIS_OVERRIDE_BUTTON_SELECTED == 1 and 0.4 or 1, 0.6, easing.outQuad),
+                }
+            },
+            Updater.Series{
+                Updater.Wait(0.5),
+                Updater.Do(function()
+                    self.remove_tail_button:Show()
+                    self.species_override_button:Show()
+                end)
+            }
+        })
+        return self
+    end
+
+    local original_OnContinueClicked = self.OnContinueClicked
+    function self:OnContinueClicked()
+        original_OnContinueClicked(self)
+        -- apply the species override (selected from the species override button)
+        if SPECEIS_OVERRIDE_BUTTON_SELECTED ~= 1 then
+            local species = SPECIES_OVERRIDE_SELECTED_TO_SPECIES[SPECEIS_OVERRIDE_BUTTON_SELECTED]
+            if self.puppet.components.charactercreator:GetSpecies() == species then
+                return
+            end
+
+            self.owner.components.charactercreator:_SetSpeciesRaw(species)
+            if self.owner.components.charactercreator.use_playerdata_storage then
+                GLOBAL.ThePlayerData:SetCharacterCreatorSpecies(self.owner.Network:GetPlayerID(), species)
+            end
+        end
+        GLOBAL.TheSaveSystem:SaveCharacterForPlayerID(self.owner.Network:GetPlayerID())
+
+        self.owner:PushEvent("charactercreator_load") -- to refresh speceis emotes
     end
 end)
