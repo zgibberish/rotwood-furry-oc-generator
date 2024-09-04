@@ -11,21 +11,70 @@ local UpvalueHacker = require("tools.upvaluehacker")
 local CHARACTER_SPECIES = GLOBAL.CHARACTER_SPECIES
 local REMOVE_TAIL_BUTTON_TEXT = "<p img='images/icons_emotes1/emote_mammimal_howl.tex' color=0 scale=2.5>\n\nREMOVE\nTAIL"
 
--- alow all locked parts
--- but this makes a dummy head part selectable,
--- do we need to filter it out?
+-- alow all locked parts, but this makes a dummy head part selectable
 function UnlockTracker:IsCosmeticUnlocked(id, _)
     -- simple fix to filter out loadout mannequin parts
     if id:find("^loadout_mannequin") ~= nil then return false end
-
 	return true
 end
 
--- allow all other speices' color options
+-- skip mismatched colors check and validation
+function CharacterCreator:ValidateColorGroups()
+end
+function CharacterCreator:IsBodyPartUnlocked(def, owner, ...)
+    -- simple fix to filter out loadout mannequin parts
+    if def.name:find("^loadout_mannequin") ~= nil then return false end
+    return true
+end
+function CharacterCreator:IsColorUnlocked(...)
+    return true
+end
+
+-- bypass species filtertags check in CharacterCreator:SetBodyPart
+-- this validation check reverts your mismatched parts to default species parts
+-- on character load
+local original_SetBodyPart = CharacterCreator.SetBodyPart
+function CharacterCreator:SetBodyPart(bodypart, name, ...)
+    -- a sort of wrapper for the original SetBodyPart, where we strip out all
+    -- the species filtertags before calling the original function, then restore
+    -- them back after the call
+
+    -- basically the same as the first portion of the og function for nil checks
+    local items = Cosmetic.BodyParts[bodypart]
+    local def
+    if items == nil then
+		return
+	end
+    if name then
+		def = items[name]
+		if not def then return end
+	end
+
+    local ret -- return
+    if def ~= nil then
+        if def.filtertags then
+            local original_filtertags = def.filtertags
+            def.filtertags[def.species] = nil
+            ret = original_SetBodyPart(self, bodypart, name, ...)
+            def.filtertags = original_filtertags
+        end
+    else
+        -- still need to call it if def is nil regardles, so the og function can
+        -- handle the rest for us
+        ret = original_SetBodyPart(self, bodypart, name, ...)
+    end
+    
+    return ret
+end
+
+-- allow all other speices' colors
 local original_GetSpeciesColors = Cosmetic.GetSpeciesColors
 function Cosmetic.GetSpeciesColors(colorgroup, _, ...)
 	local total_colors = {}
 	
+    -- we have to go through all the species to add items to a combined list
+    -- because GetSpeciesColors filters by def.species, not def.filtertags
+    -- which we already removed above (see Cosmetic.GetSpeciesColors)
     for _,species in pairs(CHARACTER_SPECIES) do
         local colors = original_GetSpeciesColors(colorgroup, species, ...)
         for _, def in pairs(colors) do
@@ -38,41 +87,21 @@ end
 
 -- allow all other speices' body parts
 local original_GetSpeciesBodyParts = Cosmetic.GetSpeciesBodyParts
--- side effect of modifying GetSpeciesBodyParts: affects randomize feature,
--- making it use all parts
 function Cosmetic.GetSpeciesBodyParts(bodypart, _, ...)
     local total_bodyparts = {}
 
+    -- we have to go through all the species to add items to a combined list
+    -- because GetSpeciesBodyParts filters by def.species, not def.filtertags
+    -- which we already removed above (see Cosmetic.GetSpeciesColors)
     for _,species in pairs(CHARACTER_SPECIES) do
         local bodyparts = original_GetSpeciesBodyParts(bodypart, species, ...)
         for _, def in pairs(bodyparts) do
-            -- filtertags check in charactercreator
-            --   remove species filtertags ONLY
-            --   we dont want to remove filtertags alltogether
-            --   because its also used for other stuff (see charactercreator)
-            if def.filtertags then
-                def.filtertags[species] = nil
-            end
-            
             table.insert(total_bodyparts, def)
         end
     end
     table.sort(total_bodyparts, Cosmetic.SortByItemName)
 
 	return total_bodyparts
-end
-
--- skips mismatched colors check and validation
-function CharacterCreator:ValidateColorGroups()
-end
-
-function CharacterCreator:IsBodyPartUnlocked(def, owner, ...)
-    -- simple fix to filter out loadout mannequin parts
-    if def.name:find("^loadout_mannequin") ~= nil then return false end
-    return true
-end
-function CharacterCreator:IsColorUnlocked(...)
-    return true
 end
 
 -- remove COLOR_EXCEPTIONS (this is used to hide the color bar
