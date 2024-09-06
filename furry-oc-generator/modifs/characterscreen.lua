@@ -78,7 +78,6 @@ AddClassPostConstruct("screens.character.characterscreen", function(self)
 
     local original_GenerateBodyPartList = self.GenerateBodyPartList
     function self:GenerateBodyPartList(bodypart, ...)
-        print(bodypart)
         original_GenerateBodyPartList(self, bodypart, ...)
 
         -- set everything, including species items to not be purchasable
