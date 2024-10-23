@@ -16,3 +16,6 @@ rotwood_compatible = true
 
 client_only_mod = false
 all_clients_require_mod = true
+
+icon_atlas = "modicon.png"
+icon = "modicon.png"
