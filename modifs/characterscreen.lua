@@ -12,7 +12,7 @@ local Updater = GLOBAL.Updater
 
 -- update these whenever the species list is changed
 local SPECIES_OVERRIDE_BUTTON_TEXT = {
-    [1] = "<p img='images/ui_ftf_dialog/convo_close.tex' color=0 scale=2.5>\n\nSPECIES\nOVERRIDE",
+    [1] = "<p img='images/ui_ftf_dialog/convo_close.tex' color=0 scale=2.2>\n\nSPECIES\nOVERRIDE",
     [2] = "<p img='images/icons_emotes1/emote_mammimal_howl.tex' color=0 scale=2.5>\n\nSPECIES\nOVERRIDE",
     [3] = "<p img='images/icons_emotes1/emote_amphibee_bubble_kiss.tex' color=0 scale=2.5>\n\nSPECIES\nOVERRIDE",
     [4] = "<p img='images/icons_emotes1/emote_pump.tex' color=0 scale=2.5>\n\nSPECIES\nOVERRIDE",
@@ -53,7 +53,6 @@ AddClassPostConstruct("screens.character.characterscreen", function(self)
     self.species_override_button = self.panel_root:AddChild(TextButton())
         :SetName("Species override button")
         :SetTextSize(self.label_font_size)
-        :OverrideLineHeight(self.label_font_size * 0.8)
         :SetText(SPECIES_OVERRIDE_BUTTON_TEXT[SPECEIS_OVERRIDE_BUTTON_SELECTED])
         :SetTextColour(UICOLORS.BACKGROUND_DARK)
         :SetTextFocusColour(UICOLORS.FOCUS_DARK)
