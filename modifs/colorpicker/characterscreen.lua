@@ -72,7 +72,7 @@ AddClassPostConstruct("screens.character.characterscreen", function(self)
             else
                 self.paintbrush_icon:SetMultColor(1,1,1,1)
             end
-            return ret
+            return ret -- self
         end
 
         -- override SetSelected so this element's selected state cannot be changed

@@ -5,5 +5,6 @@ modimport("modifs/base/characterscreen")
 
 modimport("modifs/colorpicker/playerpostinit")
 modimport("modifs/colorpicker/playerpuppet")
+modimport("modifs/colorpicker/selectablepuppet")
 modimport("modifs/colorpicker/charactercreator")
 modimport("modifs/colorpicker/characterscreen")
