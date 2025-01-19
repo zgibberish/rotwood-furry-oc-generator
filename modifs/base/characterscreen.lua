@@ -143,7 +143,7 @@ AddClassPostConstruct("screens.character.characterscreen", function(self)
         self:CheckForChanges()
     end
 
-    self.FOG_LayoutScrollableColorList = function()
+    self.FOG_LayoutScrollableColorList = function(self)
         self.color_elements_list:LayoutChildrenInGrid(self.colorlist_cols, 15)
                 :LayoutBounds("center", "bottom", self.panel_bg)
         self.colors_scroll:RefreshView()
