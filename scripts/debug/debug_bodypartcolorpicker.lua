@@ -1,7 +1,7 @@
 local DebugNodes = require "dbui.debug_nodes"
 
 local DebugBodyPartColorPicker = Class(DebugNodes.DebugNode, function(self, inst, colorgroup, cb)
-    DebugNodes.DebugNode._ctor(self, "Debug BodyPart Color Picker")
+    DebugNodes.DebugNode._ctor(self, "DebugBodyPartColorPicker")
     self.inst = inst
     self.colorgroup = colorgroup
     self.cb = cb
@@ -59,7 +59,9 @@ function DebugBodyPartColorPicker:SaveColors()
 end
 
 function DebugBodyPartColorPicker:RenderPanel(ui, panel)
-    ui:Text("Apply custom body part color")
+    ui:Text("Apply custom color for ")
+    ui:SameLineWithSpace()
+    ui:TextColored(WEBCOLORS.PALETURQUOISE, self.colorgroup)
 
     local dirty = false
 
