@@ -143,13 +143,17 @@ AddClassPostConstruct("screens.character.characterscreen", function(self)
         self:CheckForChanges()
     end
 
+    self.FOG_LayoutScrollableColorList = function()
+        self.color_elements_list:LayoutChildrenInGrid(self.colorlist_cols, 15)
+                :LayoutBounds("center", "bottom", self.panel_bg)
+        self.colors_scroll:RefreshView()
+    end
+
     -- layout our custom scrolling color list correctly
     local original_GenerateColorList = self.GenerateColorList
     function self:GenerateColorList(colorgroup, ...)
         original_GenerateColorList(self, colorgroup, ...)
-        self.color_elements_list:LayoutChildrenInGrid(self.colorlist_cols, 15)
-                :LayoutBounds("center", "bottom", self.panel_bg)
-        self.colors_scroll:RefreshView()
+        self:FOG_LayoutScrollableColorList()
     end
 
     -- make speices tooltips always show the descriptions, weather or not theyre locked
