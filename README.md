@@ -6,6 +6,10 @@ Unlock all character cosmetics, allow cross-species parts and custom colors.
 
 ## Screenshots
 
-![](img/furry-oc-generator_1.png)
-![](img/furry-oc-generator_2.png)
-![](img/furry-oc-generator_3.png)
+![Screenshot 1](img/furry-oc-generator_1.png)
+
+![Screenshot 2](img/furry-oc-generator_2.png)
+
+![Screenshot 3](img/furry-oc-generator_3.png)
+
+![Screenshot 4](img/furry-oc-generator_4.png)
