@@ -1,10 +1,8 @@
 # Furry OC Generator
 
-Unlocks all character cosmetics, allows cross-species parts and colors.
+Unlock all character cosmetics, allow cross-species parts and custom colors.
 
-**PLEASE READ:** Modded characters with mismatching parts and/or colors are **not compatible with vanilla** Rotwood and will cause many issues if used without this mod. You should revert your modded characters to default species parts before going back to vanilla! Backing up your save files are also highly recommended!
-
-**NOTE:** The mod only forces the game to show and allow all options, unlocked or not, and does not filter by species, it does not modify your character's progression to unlock any cosmetics.
+**NOTE:** This mod will NOT affect your mastery progress. Unexpected behaviors can occur when using characters with custom cosmetic options on vanilla clients.
 
 ## Screenshots
 
